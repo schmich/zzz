@@ -63,6 +63,31 @@ class SleepTimer
   }
 }
 
+class Images
+{
+  static get tray() {
+    return this._cache('tray.png');
+  }
+
+  static get idle() {
+    return this._cache('idle.png');
+  }
+
+  static get active() {
+    return this._cache('active.png');
+  }
+
+  static _cache(file) {
+    if (!this._images) {
+      this._images = {};
+    }
+    if (!this._images[file]) {
+      this._images[file] = nativeImage.createFromPath(file).resize({ width: 16, height: 16 })
+    }
+    return this._images[file];
+  }
+}
+
 class App
 {
   constructor(app) {
@@ -83,7 +108,7 @@ class App
       tick: running
     });
 
-    const image = nativeImage.createFromPath('zzz.png').resize({ width: 16, height: 16 });
+    const image = Images.tray;
     this.tray = new Tray(image);
 
     this.app = app;
@@ -102,10 +127,12 @@ class App
   _refresh() {
     let status = `Status: ${this.status}`;
 
+    let icon = this.timer.isRunning ? Images.active : Images.idle;
     let items = [
       {
         enabled: false,
-        label: status
+        label: status,
+        icon: icon
       },
       {
         type: 'separator'
