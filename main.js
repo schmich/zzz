@@ -1,8 +1,3 @@
-/*
-  TODO
-  - If computer sleeps before scheduled sleep (e.g. clsoing lid), stop scheduled sleep, notify user about interruption
-*/
-
 const { app, Menu, Tray } = require('electron');
 const { Timer, TimerState } = require('./timer');
 const { spawn } = require('child_process');
