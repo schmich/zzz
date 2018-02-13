@@ -1,14 +1,12 @@
 /*
   TODO
   - If computer sleeps before scheduled sleep (e.g. clsoing lid), stop scheduled sleep, notify user about interruption
-  - Sleep presets (5/10/15/30/60 mins)
-  - Status in menu, like Docker
 */
 
 const { app, Menu, Tray } = require('electron');
 const { Timer, TimerState } = require('./timer');
 const { spawn } = require('child_process');
-const nativeImage = require('electron').nativeImage;
+const { nativeImage } = require('electron');
 
 class SleepTimer
 {
@@ -51,9 +49,6 @@ class SleepTimer
     let timer = new Timer(duration, 60);
 
     timer.observe(this.observer);
-
-    timer.on('tick', () => {
-    });
 
     timer.on('expire', () => {
       spawn('pmset', ['sleepnow']);
@@ -167,7 +162,7 @@ class App
           }
         },
         {
-          label: 'Sleep in 60 Minutes',
+          label: 'Sleep in 1 Hour',
           click: () => {
             this.timer.start(60 * 60);
           }
