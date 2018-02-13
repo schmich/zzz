@@ -98,7 +98,7 @@ class App
       if (mins < 1) {
         time = '< 1 Minute';
       }
-      this.status = `Sleeping in ${time}`;
+      this.status = `Sleep in ${time}`;
     };
 
     this.timer = new SleepTimer({
@@ -127,12 +127,11 @@ class App
   _refresh() {
     let status = `Status: ${this.status}`;
 
-    let icon = this.timer.isRunning ? Images.active : Images.idle;
     let items = [
       {
         enabled: false,
         label: status,
-        icon: icon
+        icon: this.timer.isRunning ? Images.active : Images.idle
       },
       {
         type: 'separator'
