@@ -6,56 +6,166 @@
 */
 
 const { app, Menu, Tray } = require('electron');
+const { Timer, TimerState } = require('./timer');
 const { spawn } = require('child_process');
 const nativeImage = require('electron').nativeImage;
 
-class Alarm
+class SleepTimer
 {
-  constructor(action) {
-    this.action = action;
-    this.timeout = null;
+  constructor(observer) {
+    this.timer = null;
+    this.observer = observer;
   }
 
-  start(seconds) {
-    if (this.timeout) {
-      clearTimeout(this.timeout);
+  start(duration) {
+    this.stop();
+    this.timer = this._createTimer(duration);
+    this.timer.start();
+  }
+
+  stop() {
+    if (!this.timer) {
+      return;
     }
-    setTimeout(() => this.action(), seconds * 1000);
+
+    this.timer.stop();
+  }
+
+  get state() {
+    return this.timer ? this.timer.state : TimerState.Stopped;
+  }
+
+  get isStopped() {
+    return !this.timer || this.timer.isStopped;
+  }
+
+  get isRunning() {
+    return this.timer && this.timer.isRunning;
+  }
+
+  get isPaused() {
+    return this.timer && this.timer.isPaused;
+  }
+
+  _createTimer(duration) {
+    let timer = new Timer(duration, 60);
+
+    timer.observe(this.observer);
+
+    timer.on('tick', () => {
+    });
+
+    timer.on('expire', () => {
+      spawn('pmset', ['sleepnow']);
+    });
+
+    return timer;
   }
 }
 
-let alarm = new Alarm(() => {
-  spawn('pmset', ['sleepnow']);
-  // TODO: Set state to finished.
-});
+class App
+{
+  constructor(app) {
+    const notRunning = () => this.status = 'Idle';
+    const running = (_, remaining) => {
+      let mins = Math.round(remaining / 60);
+      let time = `${mins} Minute${mins === 1 ? '' : 's'}`;
+      if (mins < 1) {
+        time = '< 1 Minute';
+      }
+      this.status = `Sleeping in ${time}`;
+    };
+
+    this.timer = new SleepTimer({
+      start: running,
+      stop: notRunning,
+      expire: notRunning,
+      tick: running
+    });
+
+    const image = nativeImage.createFromPath('zzz.png').resize({ width: 16, height: 16 });
+    this.tray = new Tray(image);
+
+    this.app = app;
+    notRunning();
+  }
+
+  get status() {
+    return this._status;
+  }
+
+  set status(status) {
+    this._status = status;
+    this._refresh();
+  }
+
+  _refresh() {
+    let status = `Status: ${this.status}`;
+
+    let items = [
+      {
+        enabled: false,
+        label: status
+      },
+      {
+        type: 'separator'
+      }
+    ];
+
+    if (this.timer.isRunning) {
+      items = items.concat([
+        {
+          label: 'Cancel Sleep',
+          click: () => {
+            this.timer.stop();
+          }
+        },
+        {
+          type: 'separator'
+        }
+      ]);
+    }
+
+    if (this.timer.isStopped) {
+      items = items.concat([
+        {
+          label: 'Sleep in 15 Minutes',
+          click: () => {
+            this.timer.start(15 * 60);
+          }
+        },
+        {
+          label: 'Sleep in 30 Minutes',
+          click: () => {
+            this.timer.start(30 * 60);
+          }
+        },
+        {
+          label: 'Sleep in 60 Minutes',
+          click: () => {
+            this.timer.start(60 * 60);
+          }
+        },
+        {
+          type: 'separator'
+        }
+      ]);
+    }
+
+    items.push(
+      {
+        label: 'Quit',
+        click: () => {
+          this.app.quit()
+        }
+      }
+    );
+
+    this.tray.setToolTip(status);
+    this.tray.setContextMenu(Menu.buildFromTemplate(items));
+  }
+}
 
 app.on('ready', () => {
-  let image = nativeImage.createFromPath('zzz.png').resize({ width: 16, height: 16 });
-  let tray = new Tray(image)
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      enabled: false,
-      label: 'Status: Not Running'
-    },
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Sleep in 30 Minutes',
-      click() {
-        alarm.start(30 * 60);
-      }
-    },
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Quit',
-      click() {
-        app.quit()
-      }
-    }
-  ]);
-  tray.setToolTip('Status: Not Running');
-  tray.setContextMenu(contextMenu);
+  new App(app);
 });
