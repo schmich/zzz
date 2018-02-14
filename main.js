@@ -24,6 +24,14 @@ class SleepTimer
     this.timer.stop();
   }
 
+  restart() {
+    if (!this.timer) {
+      return;
+    }
+
+    this.timer.restart();
+  }
+
   get state() {
     return this.timer ? this.timer.state : TimerState.Stopped;
   }
@@ -120,58 +128,30 @@ class App
         label: this.status,
         icon: this.timer.isRunning ? Images.active : Images.idle
       },
-      {
-        type: 'separator'
-      }
+      { type: 'separator' }
     ];
 
     if (this.timer.isRunning) {
       items = items.concat([
-        {
-          label: 'Cancel Sleep',
-          click: () => {
-            this.timer.stop();
-          }
-        },
-        {
-          type: 'separator'
-        }
+        { label: 'Cancel Sleep', click: () => this.timer.stop() },
+        { label: 'Restart', click: () => this.timer.restart() },
+        { type: 'separator' }
       ]);
     }
 
     if (this.timer.isStopped) {
       items = items.concat([
-        {
-          label: 'Sleep in 15 Minutes',
-          click: () => {
-            this.timer.start(15 * 60);
-          }
-        },
-        {
-          label: 'Sleep in 30 Minutes',
-          click: () => {
-            this.timer.start(30 * 60);
-          }
-        },
-        {
-          label: 'Sleep in 1 Hour',
-          click: () => {
-            this.timer.start(60 * 60);
-          }
-        },
-        {
-          type: 'separator'
-        }
+        { label: 'Sleep in 15 Minutes', click: () => this.timer.start(15 * 60) },
+        { label: 'Sleep in 30 Minutes', click: () => this.timer.start(30 * 60) },
+        { label: 'Sleep in 45 Minutes', click: () => this.timer.start(45 * 60) },
+        { label: 'Sleep in 1 Hour',     click: () => this.timer.start(1 * 60 * 60) },
+        { label: 'Sleep in 2 Hours',    click: () => this.timer.start(2 * 60 * 60) },
+        { type: 'separator' }
       ]);
     }
 
     items.push(
-      {
-        label: 'Quit',
-        click: () => {
-          this.app.quit()
-        }
-      }
+      { label: 'Quit', click: () => this.app.quit() }
     );
 
     this.tray.setToolTip(this.status);

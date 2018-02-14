@@ -128,7 +128,7 @@ class Timer extends EventEmitter
     this.emit('change');
   }
 
-  reset() {
+  restart() {
     this.stop();
     this.start();
   }
