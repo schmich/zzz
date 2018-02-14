@@ -93,13 +93,12 @@ class App
 
     this.timer = new SleepTimer({
       start: running,
+      tick: running,
       stop: notRunning,
-      expire: notRunning,
-      tick: running
+      expire: notRunning
     });
 
-    const image = Images.tray;
-    this.tray = new Tray(image);
+    this.tray = new Tray(Images.tray);
 
     this.app = app;
     notRunning();
@@ -115,12 +114,10 @@ class App
   }
 
   _refresh() {
-    let status = `Status: ${this.status}`;
-
     let items = [
       {
         enabled: false,
-        label: status,
+        label: this.status,
         icon: this.timer.isRunning ? Images.active : Images.idle
       },
       {
@@ -177,11 +174,12 @@ class App
       }
     );
 
-    this.tray.setToolTip(status);
+    this.tray.setToolTip(this.status);
     this.tray.setContextMenu(Menu.buildFromTemplate(items));
   }
 }
 
+app.dock.hide();
 app.on('ready', () => {
   new App(app);
 });
