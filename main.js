@@ -86,9 +86,18 @@ class Images
   }
 }
 
-class App
+class Controller
 {
+  static run(app) {
+    let controller = new Controller(app);
+    controller.run();
+  }
+
   constructor(app) {
+    this.app = app;
+  }
+
+  run() {
     const notRunning = () => this.status = 'Idle';
     const running = (_, remaining) => {
       let mins = Math.round(remaining / 60);
@@ -110,6 +119,11 @@ class App
 
     this.app = app;
     notRunning();
+
+    const { powerMonitor } = require('electron');
+    powerMonitor.on('suspend', () => {
+      this.timer.stop();
+    });
   }
 
   get status() {
@@ -160,6 +174,4 @@ class App
 }
 
 app.dock.hide();
-app.on('ready', () => {
-  new App(app);
-});
+app.on('ready', () => Controller.run(app));
