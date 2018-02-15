@@ -1,7 +1,6 @@
-const { app, Menu, Tray } = require('electron');
+const { app, Menu, Tray, nativeImage } = require('electron');
 const { Timer, TimerState } = require('./timer');
 const { spawn } = require('child_process');
-const { nativeImage } = require('electron');
 
 class SleepTimer
 {
@@ -64,25 +63,27 @@ class SleepTimer
 class Images
 {
   static get tray() {
-    return this._cache('tray.png');
+    return this._cache('tray.png', 16, 16);
   }
 
   static get idle() {
-    return this._cache('idle.png');
+    return this._cache('idle.png', 16, 16);
   }
 
   static get active() {
-    return this._cache('active.png');
+    return this._cache('active.png', 16, 16);
   }
 
-  static _cache(file) {
+  static _cache(file, width, height) {
     if (!this._images) {
       this._images = {};
     }
-    if (!this._images[file]) {
-      this._images[file] = nativeImage.createFromPath(file).resize({ width: 16, height: 16 })
+    let key = `${file}-${width}-${height}`;
+    let image = this._images[key];
+    if (!image) {
+      this._images[key] = image = nativeImage.createFromPath(file).resize({ width: width, height: height })
     }
-    return this._images[file];
+    return image;
   }
 }
 
