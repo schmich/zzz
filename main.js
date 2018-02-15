@@ -117,8 +117,6 @@ class Controller
     });
 
     this.tray = new Tray(Images.tray);
-
-    this.app = app;
     notRunning();
 
     const { powerMonitor } = require('electron');
